@@ -1,28 +1,226 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LivePush HLS Player</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <title>LivePriv</title>
     <style>
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #181818;
+        * {
             margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
+
+        body {
+            background-color: #000;
+            color: #fff;
+            height: 100vh;
+            display: flex;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .video-area {
+            flex: 1;
+            background-color: #18181b;
+            position: relative;
+            min-height: 0;
+        }
+
+        .offline-badge {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+        }
+
+        .video-controls {
+            position: absolute;
+            bottom: 1rem;
+            right: 1rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .control-button {
+            background: none;
+            border: none;
+            color: white;
+            padding: 0.5rem;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .control-button:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .profile-section {
+            background-color: #18181b;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-top: 1px solid #27272a;
+        }
+
+        .profile-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .avatar-container {
+            position: relative;
+        }
+
+        .avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .live-badge {
+            position: absolute;
+            bottom: 0px;
+            left: 1px;
+            background-color: #e91e63;
+            font-size: 10px;
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
+
+        .profile-text h2 {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 1rem;
+        }
+
+        .verified-icon {
+            color: #3b82f6;
+        }
+
+        .profile-text p {
+            color: #a1a1aa;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+
+        .packages-button {
+            background-color: #e91e63;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .packages-button:hover {
+            background-color: #d81b60;
+        }
+
+        .chat-section {
+            width: 400px;
+            background-color: #18181b;
+            border-left: 1px solid #27272a;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 1rem;
+            overflow-y: auto;
+        }
+
+        .welcome-message {
+            color: #a1a1aa;
+            margin-bottom: 1rem;
+        }
+
+        .chat-message {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .message-time {
+            color: #71717a;
+        }
+
+        .message-author {
+            font-weight: 500;
+        }
+
+        .message-author.blue {
+            color: #60a5fa;
+        }
+
+        .message-author.pink {
+            color: #ec4899;
+        }
+
+        .chat-input-container {
+            padding: 1rem;
+            border-top: 1px solid #27272a;
+        }
+
+        .chat-input-wrapper {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .chat-input {
+            flex: 1;
+            background-color: #27272a;
+            border: 1px solid #3f3f46;
+            color: white;
+            padding: 0.5rem;
+            border-radius: 4px;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: #52525b;
+        }
+
+        .send-button {
+            background-color: #e91e63;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .send-button:hover {
+            background-color: #d81b60;
+        }
+
         .player-container {
             position: relative;
             width: 80%;
             max-width: 800px;
         }
+
         video {
             width: 100%;
             border-radius: 10px;
         }
+
         .live-button {
             position: absolute;
             top: 15px;
@@ -38,17 +236,67 @@
             opacity: 0.8;
             transition: opacity 0.3s;
         }
+
         .live-button:hover {
             opacity: 1;
         }
     </style>
 </head>
+
 <body>
-    <div class="player-container">
-        <video id="player" controls autoplay></video>
-        <button class="live-button" onclick="goLive()">AO VIVO</button>
+    <div class="main-content">
+        <div class="video-area">
+            <video id="player" controls autoplay></video>
+            <button id="liveButton" class="live-button" onclick="goLive()">AO VIVO</button>
+        </div>
+        <div class="profile-section">
+            <div class="profile-info">
+                <div class="avatar-container">
+                    <img src="https://static-conteudinhos.s3.amazonaws.com/production/images/322cc9ea-e9ad-4915-bf74-512f0d64cb05.jpeg"
+                        alt="Profile" class="avatar">
+                    <span class="live-badge">AO VIVO</span>
+                </div>
+                <div class="profile-text">
+                    <h2>
+                        Milena marimelo
+                        <svg class="verified-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
+                        </svg>
+                    </h2>
+                    <p>Vem ser feliz amor 💙✨ Tenho a bunda❤️ mais linda</p>
+                </div>
+            </div>
+            <button class="packages-button">Ver pacotinhos</button>
+        </div>
     </div>
-    
+
+    <div class="chat-section">
+        <div class="chat-messages">
+            <div class="welcome-message">Bem vindo ao chat</div>
+            <div class="chat-message">
+                <span class="message-time">14:22</span>
+                <span class="message-author blue">Luquinhas:</span>
+                <span class="message-content">Oi mari!! Estamos esperando</span>
+            </div>
+            <div class="chat-message">
+                <span class="message-time">14:22</span>
+                <span class="message-author pink">Curtina2:</span>
+                <span class="message-content">Ela já vai começar!</span>
+            </div>
+            <div class="chat-message">
+                <span class="message-time">14:23</span>
+                <span class="message-author blue">Luquinhas:</span>
+                <span class="message-content">Beleza!!</span>
+            </div>
+        </div>
+        <div class="chat-input-container">
+            <div class="chat-input-wrapper">
+                <input type="text" class="chat-input" placeholder="Digite sua mensagem">
+                <button class="send-button">Enviar mensagem</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const url = "https://ae216f7fe73f.us-east-1.playback.live-video.net/api/video/v1/us-east-1.305493565672.channel.Oxt4pFxG8r1C.m3u8";
         const video = document.getElementById("player");
@@ -68,10 +316,9 @@
                 hls.on(Hls.Events.ERROR, (event, data) => {
                     if (data.fatal) {
                         console.log("Erro detectado, tentando reconectar...");
-                        setTimeout(loadPlayer, 3000);
+                        // setTimeout(loadPlayer, 3000);
                     }
                 });
-                goLive();
             } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
                 video.src = url;
                 video.addEventListener('loadedmetadata', () => {
@@ -87,7 +334,7 @@
         }
 
         function goLive() {
-            video.currentTime = video.duration -2;
+            video.currentTime = video.duration - 2;
             video.play();
         }
 
