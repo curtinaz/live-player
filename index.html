@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LivePush HLS Player</title>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #181818;
+            margin: 0;
+        }
+        .player-container {
+            position: relative;
+            width: 80%;
+            max-width: 800px;
+        }
+        video {
+            width: 100%;
+            border-radius: 10px;
+        }
+        .live-button {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background-color: red;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            opacity: 0.8;
+            transition: opacity 0.3s;
+        }
+        .live-button:hover {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="player-container">
+        <video id="player" controls autoplay></video>
+        <button class="live-button" onclick="goLive()">AO VIVO</button>
+    </div>
+    
+    <script>
+        const url = "https://ae216f7fe73f.us-east-1.playback.live-video.net/api/video/v1/us-east-1.305493565672.channel.Oxt4pFxG8r1C.m3u8";
+        const video = document.getElementById("player");
+        let hls;
+
+        function loadPlayer() {
+            if (window.Hls && Hls.isSupported()) {
+                if (hls) {
+                    hls.destroy();
+                }
+                hls = new Hls();
+                hls.loadSource(url);
+                hls.attachMedia(video);
+                hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                    video.currentTime = video.duration;
+                });
+                hls.on(Hls.Events.ERROR, (event, data) => {
+                    if (data.fatal) {
+                        console.log("Erro detectado, tentando reconectar...");
+                        setTimeout(loadPlayer, 3000);
+                    }
+                });
+                goLive();
+            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                video.src = url;
+                video.addEventListener('loadedmetadata', () => {
+                    video.currentTime = video.duration;
+                });
+                video.addEventListener('error', () => {
+                    console.log("Erro no player, tentando reconectar...");
+                    setTimeout(loadPlayer, 3000);
+                });
+            } else {
+                console.error("HLS.js não é suportado neste navegador.");
+            }
+        }
+
+        function goLive() {
+            video.currentTime = video.duration -2;
+            video.play();
+        }
+
+        document.addEventListener("DOMContentLoaded", loadPlayer);
+    </script>
+</body>
+</html>
